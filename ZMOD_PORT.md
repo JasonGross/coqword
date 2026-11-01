@@ -77,6 +77,18 @@ and `rewrite /add_word` exposes the stdlib term.
    `if small z m then z else 0` guard). Use `mkword_valK`.
 7. Compile time of `word.v`: 16 s instead of 8 s on the same machine
    (Rocq 9.2, MathComp 2.6).
+8. `simpl` (`/=`) on a term such as `Z.lor (urepr (w1 + w2)) z` or
+   `wcat_r [:: 0%R]`, where a function that matches on its argument is
+   applied to a coerced word, unfolds the word to the stdlib term
+   `if small z m then z else 0`. `simpl never` on `toword`, `urepr` and
+   `add_word` does not stop it: `simpl` reduces a match scrutinee to weak
+   head normal form and ignores the flags there. With the record type the
+   same `simpl` gave `zmod_pow2 (...)`. Workaround: do not `simpl` such
+   terms; `rewrite -[t]/u` or the unfolding lemmas instead (one jasmin
+   proof, `wpbroadcast0`).
+9. After `vm_compute`, a closed word has type `Zmod 4294967296`, not
+   `word 32`, and `apply/eqP` no longer finds the `eqType` instance (it is
+   keyed on `word`). Use `apply/eqP; vm_compute` (one jasmin proof).
 
 ## New lemmas
 
